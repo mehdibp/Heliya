@@ -105,5 +105,8 @@ Thumbs.db
 
 
 # My folders!!!
-tests.html
+tests.*
+test.*
+\tests
+\test
 
