@@ -22,40 +22,36 @@ fetch(URL)
 
 
 // TimeLine --------------------------------------------------------------------------------------------
-const events = [
-    { date:   new Date(), label: 'Now'                    , details:  new Date()},
-    
-    { date: '2025-05-08', label: 'Partial lunar eclipse'  , details: 'During a partial lunar eclipse, only part of the moon enters Earths shadow, which may look like it is taking a "bite" out of the lunar surface.'},
-    { date: '2025-05-25', label: 'Moon-Venus Conjunction' , details: 'The Moon and Venus will share the same right ascension, with the Moon passing 3°00 to the south of Venus.'},
-    { date: '2025-07-13', label: 'Summer solstice'        , details: 'The summer solstice or estival solstice occurs when one of Earths poles has its maximum tilt toward the Sun.'},
-    { date: '2025-07-14', label: 'Delta meteor shower'    , details: 'The Southern Delta Aquariids are a meteor shower visible from mid July to mid August each year with peak activity on 28 or 29 July'}
-];
-events.sort((a, b) => new Date(a.date) - new Date(b.date));
-
 
 // ----------------------------------------------------------
 class TimelineRenderer {
   constructor(events) {
     this.container = document.getElementById('events-container');
-    this.events = events;
-
-    // For when the event happens today
-    const today = events.find(event => event.label === 'Now').date;
-    const todayStr = today.toISOString().split('T')[0]
-    if (events.some(event => event.date == todayStr)) {
-      this.events     = events.filter(event => event.label !== 'Now')
-      this.TodayEvent = events.find  (event => event.label !== 'Now' && event.date === todayStr);
-    } else this.TodayEvent = { label: 'Now' };
-
 
     this.timelineStart = new Date();
     this.timelineEnd   = new Date();
     this.timelineStart.setMonth(this.timelineStart.getMonth() - 1);
     this.timelineEnd  .setMonth(this.timelineEnd  .getMonth() + 2);
 
-    
-    // randomColors = Array.from({ length: event_dates.length }, () => '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0'));
-    this.colors = ['#A53860', '#C5172E', '#71C0BB', '#F564A9', '#7F55B1', '#5409DA', '#626F47'];
+    this.events = []
+    for(let i=0; i<events.length; i++){
+      const eventDate = new Date(events[i].date);
+      if (this.timelineStart < eventDate && eventDate < this.timelineEnd) this.events.push(events[i]);
+    }
+
+    // For when the event happens today
+    const today = this.events.find(event => event.label === 'Now').date;
+    const todayStr = today.toISOString().split('T')[0]
+    if (this.events.some(event => event.date == todayStr)) {
+      this.events     = this.events.filter(event => event.label !== 'Now')
+      this.TodayEvent = this.events.find  (event => event.label !== 'Now' && event.date === todayStr);
+    } else this.TodayEvent = { label: 'Now' };
+
+
+    // this.colors = Array.from({ length: this.events.length }, () => '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0'));
+    this.colors = ['#FCEFCA', '#FF9B45', '#CF0F47', '#A53860', '#7F55B1', '#5459AC', '#626F47', '#A0C878'];
+    this.colors = [...this.colors, ...this.colors, ...this.colors];
+
 
     this.selectedEvent = null;
     this.dots = []
@@ -233,8 +229,22 @@ class TimelineRenderer {
 
 }
 
-const timeline = new TimelineRenderer(events);
-timeline.render();
+
+// ----------------------------------------------------------
+const events = [ { date: new Date(), label: 'Now', details: new Date()} ];
+fetch('./Sky Events.json')
+    .then(res => res.json())
+    .then(datas => { 
+      for (const data of datas) events.push(data)
+
+      events.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+
+      const timeline = new TimelineRenderer(events);
+      timeline.render();
+      });
+
+
 
 
 
